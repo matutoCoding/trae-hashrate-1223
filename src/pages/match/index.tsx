@@ -16,10 +16,10 @@ type TabType = 'all' | 'matched' | 'waiting';
 
 const MatchPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('all');
-  const { matches, setCustomerWilling, setMasterWilling } = useMatchStore();
-  const { role } = useUserStore();
+  const { matches, setCustomerWilling, setMasterWilling, lockOrderForMaster, isOrderLocked } = useMatchStore();
+  const { role, currentUser } = useUserStore();
   const { updateOrder } = useServiceStore();
-  const { addToQueue } = useQueueStore();
+  const { addToQueue, getMyQueueItem } = useQueueStore();
 
   const tabs = [
     { key: 'all' as TabType, label: '全部' },
@@ -50,9 +50,25 @@ const MatchPage: React.FC = () => {
   };
 
   const handleJoinQueue = (item: MatchItem) => {
+    const existingQueueItem = getMyQueueItem(item.order.id);
+    if (existingQueueItem) {
+      Taro.showModal({
+        title: '订单已在队列中',
+        content: `该订单已由 ${existingQueueItem.master.name} 师傅接单\n\n取号：${existingQueueItem.queueNumber}号\n当前排位：第${existingQueueItem.position}位\n状态：${existingQueueItem.status === 'waiting' ? '排队中' : existingQueueItem.status === 'called' ? '已叫号' : '服务中'}`,
+        showCancel: false,
+        confirmText: '查看队列',
+        success: (res) => {
+          if (res.confirm) {
+            Taro.switchTab({ url: '/pages/queue/index' });
+          }
+        },
+      });
+      return;
+    }
+
     Taro.showModal({
       title: '确认进入队列',
-      content: `匹配成功！是否将订单"${item.order.serviceName}"加入服务队列？`,
+      content: `匹配成功！将由 ${item.master.name} 师傅为您服务。\n\n是否将订单"${item.order.serviceName}"加入服务队列？`,
       success: (res) => {
         if (res.confirm) {
           updateOrder(item.order.id, {
@@ -62,8 +78,20 @@ const MatchPage: React.FC = () => {
             masterAvatar: item.master.avatar,
             isMatched: true,
           });
-          addToQueue(item.order.id, item.order.priority, item.order);
-          Taro.showToast({ title: '已加入队列', icon: 'success' });
+          
+          lockOrderForMaster(item.order.id, item.master);
+          
+          const result = addToQueue(item.order.id, item.order.priority, item.order, item.master);
+          
+          if (result.isNew) {
+            Taro.showToast({ title: `取号成功，${result.queueNumber}号`, icon: 'success' });
+          } else {
+            Taro.showModal({
+              title: '已在队列中',
+              content: `该订单已在队列中\n\n取号：${result.queueNumber}号\n当前排位：第${result.position}位\n接单师傅：${result.masterName}\n状态：${result.status}`,
+              showCancel: false,
+            });
+          }
         }
       },
     });
@@ -110,12 +138,19 @@ const MatchPage: React.FC = () => {
       <ScrollView scrollY style={{ height: 'calc(100vh - 500rpx)' }}>
         <View className={styles.matchList}>
           {filteredMatches.length > 0 ? (
-            filteredMatches.map((item) => (
+            filteredMatches.map((item) => {
+              const lockInfo = isOrderLocked(item.order.id);
+              return (
               <View
                 key={item.id}
-                className={classnames(styles.matchCard, item.isMatched && styles.matchMatched)}
+                className={classnames(styles.matchCard, item.isMatched && styles.matchMatched, lockInfo.locked && lockInfo.master?.id !== item.master.id && styles.locked)}
               >
                 <View className={styles.matchHeader}>
+                  {lockInfo.locked && lockInfo.master?.id !== item.master.id && (
+                    <View className={styles.lockedBadge}>
+                      🔒 已由 {lockInfo.master?.name} 师傅接单
+                    </View>
+                  )}
                   <View className={styles.orderInfo}>
                     <View className={styles.orderTitle}>
                       <Text className={styles.serviceType}>{item.order.serviceName}</Text>
@@ -179,7 +214,13 @@ const MatchPage: React.FC = () => {
                   </View>
                 </View>
 
-                {!item.isMatched && (
+                {lockInfo.locked && lockInfo.master?.id !== item.master.id && (
+                  <View className={styles.lockedHint}>
+                    <Text>该订单已分配给 {lockInfo.master?.name} 师傅，不再接受其他意向</Text>
+                  </View>
+                )}
+
+                {!item.isMatched && !lockInfo.locked && (
                   <View className={styles.willingSection}>
                     <View className={styles.willingRow}>
                       <Text className={styles.willingLabel}>客户意愿：</Text>
@@ -241,7 +282,8 @@ const MatchPage: React.FC = () => {
                   </>
                 )}
               </View>
-            ))
+              );
+            })
           ) : (
             <Empty text="暂无匹配记录" icon="🤝" />
           )}

@@ -8,7 +8,8 @@ export default defineAppConfig({
     'pages/master-detail/index',
     'pages/order-detail/index',
     'pages/publish-service/index',
-    'pages/queue-detail/index'
+    'pages/queue-detail/index',
+    'pages/master-orders/index'
   ],
   window: {
     backgroundTextStyle: 'light',

@@ -345,3 +345,31 @@
   background: $color-bg-hover;
   color: $color-text-primary;
 }
+
+.locked {
+  opacity: 0.6;
+  background: $color-bg-hover;
+}
+
+.lockedBadge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(135deg, $color-warning 0%, #FFB74D 100%);
+  color: $color-text-white;
+  padding: 8rpx 24rpx;
+  border-radius: $radius-lg 0 $radius-md 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  z-index: 1;
+}
+
+.lockedHint {
+  margin-top: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  background: rgba(255, 152, 0, 0.1);
+  border-radius: $radius-md;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-warning;
+}

@@ -209,3 +209,216 @@
     opacity: 0.95;
   }
 }
+
+.viewTabs {
+  display: flex;
+  background: $color-bg-card;
+  margin: 0 $page-padding $spacing-md;
+  border-radius: $radius-button;
+  padding: 8rpx;
+}
+
+.viewTab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &.viewTabActive {
+    background: $color-primary;
+    color: $color-text-white;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.serviceTypeFilter {
+  display: flex;
+  gap: $spacing-sm;
+  padding: 0 $page-padding $spacing-md;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+
+.filterChip {
+  padding: $spacing-sm $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  white-space: nowrap;
+  transition: all $transition-base;
+  border: 2rpx solid transparent;
+
+  &.filterChipActive {
+    background: $color-primary-light;
+    color: $color-primary;
+    border-color: $color-primary;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.routeSummary {
+  display: flex;
+  background: $color-bg-card;
+  margin: 0 $page-padding $spacing-md;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.routeSummaryItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.routeSummaryValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.routeSummaryLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.routeList {
+  padding: 0 $page-padding;
+}
+
+.routeItem {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  position: relative;
+}
+
+.routeItemHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+}
+
+.routeSequence {
+  width: 64rpx;
+  height: 64rpx;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.routeSequenceText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.routeItemInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.routeItemTitle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.routeServiceName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.routeCustomer {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.routeAddress {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.routeItemRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $spacing-xs;
+}
+
+.routePrice {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-price;
+}
+
+.routeEta {
+  font-size: $font-size-xs;
+  color: $color-success;
+}
+
+.routeConnector {
+  display: flex;
+  align-items: center;
+  padding: $spacing-sm 0;
+  margin-left: 32rpx;
+  position: relative;
+}
+
+.routeConnectorLine {
+  width: 4rpx;
+  height: 48rpx;
+  background: $color-primary-light;
+  margin-right: $spacing-sm;
+}
+
+.routeConnectorInfo {
+  flex: 1;
+}
+
+.routeConnectorText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.routeItemFooter {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.routeStat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.routeStatLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.routeStatValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}

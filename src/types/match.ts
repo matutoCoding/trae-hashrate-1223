@@ -15,6 +15,8 @@ export interface MatchItem {
   masterWilling: boolean;
   isMatched: boolean;
   createTime: string;
+  isLocked?: boolean;
+  lockedByMaster?: MasterInfo;
 }
 
 export interface MatchResult {

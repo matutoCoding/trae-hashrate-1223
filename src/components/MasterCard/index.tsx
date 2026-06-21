@@ -14,6 +14,9 @@ interface MasterCardProps {
   customerWilling?: boolean;
   masterWilling?: boolean;
   isMatched?: boolean;
+  isLocked?: boolean;
+  lockedByMaster?: MasterInfo;
+  isCurrentMaster?: boolean;
   onCustomerWilling?: (willing: boolean) => void;
   onMasterWilling?: (willing: boolean) => void;
   onClick?: () => void;
@@ -26,10 +29,15 @@ const MasterCard: React.FC<MasterCardProps> = ({
   customerWilling,
   masterWilling,
   isMatched,
+  isLocked,
+  lockedByMaster,
+  isCurrentMaster,
   onCustomerWilling,
   onMasterWilling,
   onClick,
 }) => {
+  const isLockedByOther = isLocked && lockedByMaster && lockedByMaster.id !== master.id;
+
   const handleClick = () => {
     if (onClick) {
       onClick();
@@ -39,8 +47,13 @@ const MasterCard: React.FC<MasterCardProps> = ({
   };
 
   return (
-    <View className={styles.card} onClick={handleClick}>
+    <View className={`${styles.card} ${isLockedByOther ? styles.locked : ''}`} onClick={handleClick}>
       {isMatched && <View className={styles.matchedBadge}>🎉 互选成功</View>}
+      {isLockedByOther && (
+        <View className={styles.lockedBadge}>
+          🔒 已由 {lockedByMaster?.name} 师傅接单
+        </View>
+      )}
 
       <View className={styles.header}>
         <View className={styles.left}>
@@ -80,7 +93,7 @@ const MasterCard: React.FC<MasterCardProps> = ({
         <Text className={styles.address}>📍 {master.address}</Text>
       </View>
 
-      {showWilling && (
+      {showWilling && !isLockedByOther && (
         <View className={styles.willingSection}>
           <View className={styles.willingRow}>
             <Text className={styles.willingLabel}>客户意愿：</Text>
@@ -133,6 +146,12 @@ const MasterCard: React.FC<MasterCardProps> = ({
               <Text>✅ 双方已确认意向，匹配成功！</Text>
             </View>
           )}
+        </View>
+      )}
+
+      {isLockedByOther && (
+        <View className={styles.lockedHint}>
+          <Text>该订单已分配给 {lockedByMaster?.name} 师傅，不再接受其他意向</Text>
         </View>
       )}
     </View>

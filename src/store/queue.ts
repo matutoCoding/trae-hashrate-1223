@@ -1,9 +1,12 @@
 import { create } from 'zustand';
 import type { QueueItem, QueueInfo, QueueStatus } from '@/types/queue';
 import type { PriorityLevel } from '@/types/service';
+import type { MasterInfo } from '@/types/user';
 import { mockQueueInfo, mockQueueItems } from '@/data/queue';
-import { getPriorityWeight } from '@/utils/index';
+import { getPriorityWeight, generateRoutePlan } from '@/utils/index';
 import { persistStore } from '@/utils/persist';
+import type { ServiceType } from '@/types/service';
+import type { RoutePlanItem } from '@/types/queue';
 
 const persist = persistStore<{ queueItems: QueueItem[]; queueInfo: QueueInfo }>('queue_store', {
   queueItems: mockQueueItems,
@@ -11,16 +14,32 @@ const persist = persistStore<{ queueItems: QueueItem[]; queueInfo: QueueInfo }>(
 });
 const saved = persist.load();
 
+interface AddToQueueResult {
+  success: boolean;
+  isNew: boolean;
+  queueNumber: number;
+  position: number;
+  masterName: string;
+  status: string;
+}
+
 interface QueueStore {
   queueInfo: QueueInfo;
   queueItems: QueueItem[];
-  addToQueue: (orderId: string, priority: PriorityLevel, order: QueueItem['order']) => boolean;
+  addToQueue: (orderId: string, priority: PriorityLevel, order: QueueItem['order'], master: MasterInfo) => AddToQueueResult;
   upgradePriority: (itemId: string, newPriority: PriorityLevel) => void;
   updateQueueStatus: (itemId: string, status: QueueStatus) => void;
   callNext: () => void;
   sortQueue: () => void;
   getMyQueueItem: (orderId: string) => QueueItem | undefined;
   hasQueueItem: (orderId: string) => boolean;
+  getQueueItemByOrder: (orderId: string) => QueueItem | undefined;
+  generateRoutePlanForMaster: (masterId: string, masterLocation: { lat: number; lng: number }, serviceType?: ServiceType) => {
+    items: RoutePlanItem[];
+    totalDistance: number;
+    totalDuration: number;
+    totalPrice: number;
+  };
 }
 
 const sortQueueItems = (items: QueueItem[]): QueueItem[] => {
@@ -43,15 +62,33 @@ const sortQueueItems = (items: QueueItem[]): QueueItem[] => {
     }));
 };
 
+const getStatusText = (status: QueueStatus): string => {
+  const map: Record<QueueStatus, string> = {
+    waiting: '排队中',
+    called: '已叫号',
+    serving: '服务中',
+    completed: '已完成',
+    left: '已离开',
+  };
+  return map[status];
+};
+
 export const useQueueStore = create<QueueStore>((set, get) => ({
   queueInfo: saved.queueInfo || mockQueueInfo,
   queueItems: sortQueueItems(saved.queueItems || mockQueueItems),
 
-  addToQueue: (orderId, priority, order) => {
+  addToQueue: (orderId, priority, order, master) => {
     const existing = get().queueItems.find((i) => i.orderId === orderId);
     if (existing) {
-      console.log('[QueueStore] addToQueue: already exists, skip', orderId);
-      return false;
+      console.log('[QueueStore] addToQueue: already exists, return info', orderId);
+      return {
+        success: true,
+        isNew: false,
+        queueNumber: existing.queueNumber,
+        position: existing.position,
+        masterName: existing.master.name,
+        status: getStatusText(existing.status),
+      };
     }
 
     const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -59,7 +96,14 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     const newItem: QueueItem = {
       id: `queue_${orderId}`,
       orderId,
-      order: { ...order, status: 'in_queue' },
+      order: { 
+        ...order, 
+        status: 'in_queue',
+        masterId: master.id,
+        masterName: master.name,
+        masterAvatar: master.avatar,
+      },
+      master,
       queueNumber: maxNum + 1,
       priority,
       priorityWeight: getPriorityWeight(priority),
@@ -78,8 +122,16 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
         },
       };
     });
-    console.log('[QueueStore] addToQueue: added', orderId, priority);
-    return true;
+    console.log('[QueueStore] addToQueue: added', orderId, priority, 'master:', master.id);
+    const updatedItem = get().queueItems.find((i) => i.orderId === orderId)!;
+    return {
+      success: true,
+      isNew: true,
+      queueNumber: updatedItem.queueNumber,
+      position: updatedItem.position,
+      masterName: master.name,
+      status: '排队中',
+    };
   },
 
   upgradePriority: (itemId, newPriority) => {
@@ -134,6 +186,12 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
 
   getMyQueueItem: (orderId) => get().queueItems.find((i) => i.orderId === orderId),
   hasQueueItem: (orderId) => get().queueItems.some((i) => i.orderId === orderId),
+  getQueueItemByOrder: (orderId) => get().queueItems.find((i) => i.orderId === orderId),
+
+  generateRoutePlanForMaster: (masterId, masterLocation, serviceType) => {
+    const masterItems = get().queueItems.filter((item) => item.master.id === masterId);
+    return generateRoutePlan(masterItems, masterLocation, serviceType);
+  },
 }));
 
 useQueueStore.subscribe((state) => {

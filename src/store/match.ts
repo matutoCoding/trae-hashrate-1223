@@ -13,8 +13,10 @@ const saved = persist.load();
 interface MatchStore {
   matches: MatchItem[];
   generateMatchesForOrder: (order: ServiceOrder, masters?: MasterInfo[]) => void;
-  setCustomerWilling: (matchId: string, willing: boolean) => void;
-  setMasterWilling: (matchId: string, willing: boolean) => void;
+  setCustomerWilling: (matchId: string, willing: boolean) => boolean;
+  setMasterWilling: (matchId: string, willing: boolean) => boolean;
+  lockOrderForMaster: (orderId: string, master: MasterInfo) => void;
+  isOrderLocked: (orderId: string) => { locked: boolean; master?: MasterInfo };
   getMatchesByOrder: (orderId: string) => MatchItem[];
   getMatchesByMaster: (masterId: string) => MatchItem[];
   getMutualMatches: () => MatchItem[];
@@ -40,6 +42,7 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
         masterWilling: false,
         isMatched: false,
         createTime: now,
+        isLocked: false,
       };
     });
 
@@ -49,6 +52,15 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     console.log('[MatchStore] generateMatchesForOrder:', order.id, newMatches.length, 'matches');
   },
   setCustomerWilling: (matchId, willing) => {
+    const match = get().matches.find((m) => m.id === matchId);
+    if (!match) return false;
+    
+    const lockInfo = get().isOrderLocked(match.order.id);
+    if (lockInfo.locked && lockInfo.master?.id !== match.master.id) {
+      console.log('[MatchStore] setCustomerWilling: order locked by other master', match.order.id);
+      return false;
+    }
+
     set((state) => {
       const updated = state.matches.map((m) => {
         if (m.id === matchId) {
@@ -61,8 +73,18 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       return { matches: sortByMatchScore(updated) };
     });
     console.log('[MatchStore] setCustomerWilling:', matchId, willing);
+    return true;
   },
   setMasterWilling: (matchId, willing) => {
+    const match = get().matches.find((m) => m.id === matchId);
+    if (!match) return false;
+    
+    const lockInfo = get().isOrderLocked(match.order.id);
+    if (lockInfo.locked && lockInfo.master?.id !== match.master.id) {
+      console.log('[MatchStore] setMasterWilling: order locked by other master', match.order.id);
+      return false;
+    }
+
     set((state) => {
       const updated = state.matches.map((m) => {
         if (m.id === matchId) {
@@ -75,6 +97,30 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       return { matches: sortByMatchScore(updated) };
     });
     console.log('[MatchStore] setMasterWilling:', matchId, willing);
+    return true;
+  },
+  lockOrderForMaster: (orderId, master) => {
+    set((state) => {
+      const updated = state.matches.map((m) => {
+        if (m.order.id === orderId) {
+          return {
+            ...m,
+            isLocked: true,
+            lockedByMaster: master,
+          };
+        }
+        return m;
+      });
+      return { matches: sortByMatchScore(updated) };
+    });
+    console.log('[MatchStore] lockOrderForMaster:', orderId, 'locked by', master.id);
+  },
+  isOrderLocked: (orderId) => {
+    const lockedMatch = get().matches.find((m) => m.order.id === orderId && m.isLocked);
+    if (lockedMatch && lockedMatch.lockedByMaster) {
+      return { locked: true, master: lockedMatch.lockedByMaster };
+    }
+    return { locked: false };
   },
   getMatchesByOrder: (orderId) => get().matches.filter((m) => m.order.id === orderId),
   getMatchesByMaster: (masterId) => get().matches.filter((m) => m.master.id === masterId),
