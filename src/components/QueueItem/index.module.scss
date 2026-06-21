@@ -1,0 +1,139 @@
+@use '@/styles/variables.scss' as *;
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+  border-left: 6rpx solid transparent;
+
+  &:active {
+    transform: scale(0.99);
+    opacity: 0.95;
+  }
+}
+
+.serving {
+  border-left-color: $color-primary;
+}
+
+.called {
+  border-left-color: $color-warning;
+}
+
+.waiting {
+  border-left-color: $color-border;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100rpx;
+}
+
+.numberBox {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.number {
+  font-size: 56rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  line-height: 1;
+}
+
+.numberLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-left: 4rpx;
+}
+
+.position {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+}
+
+.middle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.serviceName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.customer {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-top: $spacing-xs;
+}
+
+.price {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-price;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $spacing-sm;
+  min-width: 120rpx;
+}
+
+.waitTime {
+  display: flex;
+  align-items: baseline;
+}
+
+.waitTimeValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-warning;
+}
+
+.waitTimeLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-left: 4rpx;
+}
+
+.upgradeBtn {
+  padding: $spacing-sm $spacing-md;
+  background: linear-gradient(135deg, $color-error 0%, #FF6B6B 100%);
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+}

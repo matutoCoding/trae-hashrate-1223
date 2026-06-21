@@ -1,0 +1,169 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 120rpx;
+}
+
+.header {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  padding: $spacing-xl $page-padding $spacing-xl * 2;
+  color: $color-text-white;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.avatar {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.2);
+  border: 4rpx solid rgba(255, 255, 255, 0.4);
+}
+
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.name {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+}
+
+.role {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-button;
+  font-size: $font-size-xs;
+  align-self: flex-start;
+}
+
+.phone {
+  font-size: $font-size-sm;
+  opacity: 0.85;
+}
+
+.roleSwitch {
+  display: flex;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-button;
+  padding: 6rpx;
+}
+
+.roleOption {
+  padding: $spacing-xs $spacing-md;
+  font-size: $font-size-xs;
+  border-radius: $radius-button;
+  color: rgba(255, 255, 255, 0.7);
+
+  &.active {
+    background: $color-text-white;
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.stats {
+  display: flex;
+  background: $color-bg-card;
+  margin: -$spacing-lg $page-padding $spacing-md;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-float;
+  position: relative;
+  z-index: 5;
+}
+
+.statItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xs;
+  border-right: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.statValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.section {
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  padding: $spacing-md $page-padding $spacing-sm;
+}
+
+.menuList {
+  background: $color-bg-card;
+  margin: 0 $page-padding;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  transition: all $transition-base;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.menuIcon {
+  font-size: 40rpx;
+  margin-right: $spacing-md;
+  width: 56rpx;
+  text-align: center;
+}
+
+.menuText {
+  flex: 1;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.menuArrow {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.menuBadge {
+  background: $color-error;
+  color: $color-text-white;
+  font-size: $font-size-xs;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-round;
+  margin-right: $spacing-sm;
+}

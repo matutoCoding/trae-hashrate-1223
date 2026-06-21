@@ -1,0 +1,249 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 200rpx;
+}
+
+.formSection {
+  background: $color-bg-card;
+  margin: $spacing-md $page-padding;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-lg;
+}
+
+.serviceTypeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+}
+
+.serviceTypeItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-lg $spacing-md;
+  border-radius: $radius-lg;
+  background: $color-bg-hover;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    background: $color-bg-primary-light;
+    border-color: $color-primary;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.serviceTypeIcon {
+  font-size: 56rpx;
+  line-height: 1;
+}
+
+.serviceTypeName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.serviceTypePrice {
+  font-size: $font-size-xs;
+  color: $color-price;
+}
+
+.formItem {
+  margin-bottom: $spacing-lg;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.formLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.formInput {
+  width: 100%;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  min-height: 80rpx;
+  display: flex;
+  align-items: center;
+}
+
+.formTextarea {
+  width: 100%;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  min-height: 200rpx;
+}
+
+.quantityControl {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.quantityBtn {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  font-size: $font-size-xl;
+  color: $color-text-primary;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.95);
+    background: $color-primary;
+    color: $color-text-white;
+  }
+}
+
+.quantityValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  min-width: 80rpx;
+  text-align: center;
+}
+
+.priorityOptions {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.priorityOption {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-md;
+  border-radius: $radius-lg;
+  background: $color-bg-hover;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    border-color: $color-primary;
+    background: $color-bg-primary-light;
+  }
+
+  &.urgent.active {
+    border-color: $color-error;
+    background: rgba(245, 63, 63, 0.1);
+  }
+
+  &.vip.active {
+    border-color: $color-warning;
+    background: $color-tag-bg;
+  }
+}
+
+.priorityLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.priorityDesc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.pricePreview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-md 0;
+  border-top: 1rpx solid $color-divider;
+  margin-top: $spacing-md;
+}
+
+.priceLabel {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+}
+
+.priceValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-price;
+}
+
+.submitBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc($spacing-md + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: $spacing-md;
+}
+
+.submitBtn {
+  flex: 1;
+  height: $button-height-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.95;
+  }
+}
+
+.cancelBtn {
+  width: 200rpx;
+  height: $button-height-lg;
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}

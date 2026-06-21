@@ -1,0 +1,46 @@
+@use '@/styles/variables.scss' as *;
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-weight: $font-weight-medium;
+}
+
+.sm {
+  padding: 4rpx 16rpx;
+  font-size: $font-size-xs;
+  border-radius: $radius-xs;
+}
+
+.md {
+  padding: 8rpx 24rpx;
+  font-size: $font-size-sm;
+  border-radius: $radius-sm;
+}
+
+.primary {
+  background: $color-bg-primary-light;
+  color: $color-primary;
+}
+
+.warning {
+  background: $color-tag-bg;
+  color: $color-tag-text;
+}
+
+.danger {
+  background: rgba(245, 63, 63, 0.1);
+  color: $color-error;
+}
+
+.success {
+  background: rgba(0, 180, 42, 0.1);
+  color: $color-success;
+}
+
+.default {
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+}

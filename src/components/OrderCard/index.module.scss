@@ -1,0 +1,121 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+    opacity: 0.95;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.orderNo {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.body {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+}
+
+.serviceInfo {
+  display: flex;
+  gap: $spacing-md;
+  flex: 1;
+}
+
+.serviceIcon {
+  font-size: 48rpx;
+  line-height: 1;
+}
+
+.serviceDetail {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.serviceName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.serviceDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  @include text-ellipsis-multi(2);
+}
+
+.priceRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $spacing-xs;
+}
+
+.quantity {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.price {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-price;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.time {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.master {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.masterAvatar {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: $radius-round;
+  background: $color-bg-hover;
+}
+
+.masterName {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}

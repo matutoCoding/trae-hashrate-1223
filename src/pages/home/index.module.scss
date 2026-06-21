@@ -1,0 +1,207 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #E8F5E9 0%, $color-bg-page 400rpx);
+  padding-bottom: 120rpx;
+}
+
+.header {
+  padding: $spacing-lg $page-padding;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.greeting {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.greetingTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-primary-dark;
+}
+
+.greetingSubtitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  background: rgba(255, 255, 255, 0.9);
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-button;
+}
+
+.locationText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  max-width: 200rpx;
+}
+
+.banner {
+  margin: 0 $page-padding $spacing-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  color: $color-text-white;
+  position: relative;
+  overflow: hidden;
+}
+
+.bannerContent {
+  position: relative;
+  z-index: 1;
+}
+
+.bannerTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-sm;
+}
+
+.bannerDesc {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+  margin-bottom: $spacing-md;
+  line-height: $line-height-normal;
+}
+
+.bannerBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: $color-text-white;
+  color: $color-primary;
+  padding: $spacing-sm $spacing-xl;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+}
+
+.bannerDecoration {
+  position: absolute;
+  right: -40rpx;
+  top: -40rpx;
+  font-size: 200rpx;
+  opacity: 0.15;
+}
+
+.section {
+  margin-bottom: $spacing-lg;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionMore {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.serviceGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-md;
+  padding: 0 $page-padding;
+}
+
+.serviceItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg $spacing-sm;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.serviceIcon {
+  font-size: 56rpx;
+  line-height: 1;
+}
+
+.serviceName {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.servicePrice {
+  font-size: $font-size-xs;
+  color: $color-price;
+}
+
+.quickActions {
+  display: flex;
+  gap: $spacing-md;
+  padding: 0 $page-padding;
+}
+
+.quickAction {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.quickActionIcon {
+  font-size: 40rpx;
+}
+
+.quickActionText {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.orderList {
+  padding: 0 $page-padding;
+}
+
+.empty {
+  padding: $spacing-xl * 2 0;
+  text-align: center;
+  color: $color-text-tertiary;
+  font-size: $font-size-md;
+}

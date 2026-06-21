@@ -1,0 +1,171 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 120rpx;
+}
+
+.statusHeader {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  padding: $spacing-xl $page-padding;
+  color: $color-text-white;
+}
+
+.statusText {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.statusDesc {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.section {
+  background: $color-bg-card;
+  margin: $spacing-md $page-padding;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.orderNoRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.orderNoLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.orderNoValue {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.serviceInfo {
+  display: flex;
+  gap: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.serviceIcon {
+  font-size: 56rpx;
+  line-height: 1;
+}
+
+.serviceDetail {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.serviceName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.serviceDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.servicePrice {
+  text-align: right;
+}
+
+.priceValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-price;
+}
+
+.quantity {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.infoRow {
+  display: flex;
+  margin-bottom: $spacing-md;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.infoLabel {
+  width: 140rpx;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.timeline {
+  position: relative;
+  padding-left: $spacing-lg;
+}
+
+.timelineItem {
+  position: relative;
+  padding-bottom: $spacing-lg;
+  padding-left: $spacing-md;
+  border-left: 2rpx solid $color-border;
+
+  &:last-child {
+    border-left-color: transparent;
+    padding-bottom: 0;
+  }
+}
+
+.timelineDot {
+  position: absolute;
+  left: -14rpx;
+  top: 0;
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: $radius-round;
+  background: $color-primary;
+  border: 4rpx solid $color-bg-card;
+  box-shadow: 0 0 0 2rpx $color-primary;
+}
+
+.timelineItem.pending .timelineDot {
+  background: $color-border;
+  box-shadow: 0 0 0 2rpx $color-border;
+}
+
+.timelineTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-xs;
+}
+
+.timelineText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.timelineItem.pending .timelineText {
+  color: $color-text-tertiary;
+}

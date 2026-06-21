@@ -1,0 +1,42 @@
+@use '@/styles/variables.scss' as *;
+
+.rate {
+  display: inline-flex;
+  align-items: center;
+}
+
+.stars {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sm {
+  font-size: 24rpx;
+  margin-right: 4rpx;
+}
+
+.md {
+  font-size: 32rpx;
+  margin-right: 6rpx;
+}
+
+.smEmpty,
+.mdEmpty {
+  opacity: 0.3;
+}
+
+.smEmpty {
+  font-size: 24rpx;
+  margin-right: 4rpx;
+}
+
+.mdEmpty {
+  font-size: 32rpx;
+  margin-right: 6rpx;
+}
+
+.value {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-left: $spacing-xs;
+}

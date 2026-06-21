@@ -1,0 +1,186 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  position: relative;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+    opacity: 0.95;
+  }
+}
+
+.matchedBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  padding: 8rpx 24rpx;
+  border-radius: 0 $radius-lg 0 $radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+}
+
+.left {
+  display: flex;
+  gap: $spacing-md;
+  flex: 1;
+}
+
+.avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: $radius-round;
+  background: $color-bg-hover;
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.name {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.stat {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  min-width: 100rpx;
+}
+
+.scoreValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.scoreLabel {
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.priceRange {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-price;
+}
+
+.address {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+  max-width: 300rpx;
+}
+
+.willingSection {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.willingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.willingLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.willingBtns {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.willingBtn {
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-button;
+  background: $color-bg-hover;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.active {
+  background: $color-primary;
+  color: $color-text-white;
+}
+
+.inactive {
+  background: rgba(245, 63, 63, 0.1);
+  color: $color-error;
+}
+
+.matchSuccess {
+  background: $color-bg-primary-light;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  text-align: center;
+  font-size: $font-size-md;
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}

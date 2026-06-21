@@ -1,0 +1,211 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 120rpx;
+}
+
+.header {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  padding: $spacing-xl $page-padding;
+  color: $color-text-white;
+}
+
+.headerTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.headerDesc {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.statusBoard {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-xl;
+}
+
+.statusItem {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  text-align: center;
+  backdrop-filter: blur(10rpx);
+}
+
+.statusValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+}
+
+.statusLabel {
+  font-size: $font-size-xs;
+  opacity: 0.85;
+  margin-top: $spacing-xs;
+}
+
+.currentCall {
+  background: $color-bg-card;
+  margin: -$spacing-lg $page-padding $spacing-md;
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  box-shadow: $shadow-float;
+  position: relative;
+  z-index: 5;
+}
+
+.currentCallTitle {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.currentCallContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.currentNumber {
+  font-size: 96rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  line-height: 1;
+}
+
+.currentInfo {
+  text-align: right;
+}
+
+.currentService {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.currentCustomer {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.urgentTag {
+  display: inline-block;
+  background: rgba(245, 63, 63, 0.1);
+  color: $color-error;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  margin-left: $spacing-xs;
+}
+
+.tabs {
+  display: flex;
+  background: $color-bg-card;
+  margin: 0 $page-padding $spacing-md;
+  border-radius: $radius-button;
+  padding: 8rpx;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.queueInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-md;
+}
+
+.queueInfoText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+}
+
+.priorityLegend {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.legendDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+}
+
+.legendDot.normal {
+  background: $color-border;
+}
+
+.legendDot.urgent {
+  background: $color-error;
+}
+
+.legendDot.vip {
+  background: $color-warning;
+}
+
+.legendText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.queueList {
+  padding: 0 $page-padding;
+}
+
+.callNextBtn {
+  position: fixed;
+  bottom: 40rpx;
+  left: $page-padding;
+  right: $page-padding;
+  height: $button-height-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  box-shadow: $shadow-float;
+  transition: all $transition-base;
+  z-index: 100;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.95;
+  }
+}
