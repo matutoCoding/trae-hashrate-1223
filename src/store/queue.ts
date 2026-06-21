@@ -26,15 +26,26 @@ const DEFAULT_MASTER: MasterInfo = {
   priceRange: { min: 30, max: 150 },
 };
 
-const fallbackMaster = (masterId: string): MasterInfo => {
-  const existing = mockMasters.find((m) => m.id === masterId);
-  if (existing) return existing;
-  return { ...DEFAULT_MASTER, id: masterId, name: `师傅${masterId.slice(-4)}` };
+const fallbackMaster = (masterId?: string, masterName?: string, masterAvatar?: string): MasterInfo => {
+  if (masterId) {
+    const existing = mockMasters.find((m) => m.id === masterId);
+    if (existing) return existing;
+  }
+  return {
+    ...DEFAULT_MASTER,
+    id: masterId || DEFAULT_MASTER.id,
+    name: masterName || (masterId ? `师傅${masterId.slice(-4)}` : DEFAULT_MASTER.name),
+    avatar: masterAvatar || DEFAULT_MASTER.avatar,
+  };
 };
 
 const sanitizeQueueItem = (item: QueueItem): QueueItem => {
   if (!item.master) {
-    const master = fallbackMaster(item.order.masterId || DEFAULT_MASTER.id);
+    const master = fallbackMaster(
+      item.order?.masterId,
+      item.order?.masterName,
+      item.order?.masterAvatar
+    );
     return {
       ...item,
       master,
@@ -43,6 +54,17 @@ const sanitizeQueueItem = (item: QueueItem): QueueItem => {
         masterId: master.id,
         masterName: master.name,
         masterAvatar: master.avatar,
+      },
+    };
+  }
+  if (item.master && !item.order.masterId) {
+    return {
+      ...item,
+      order: {
+        ...item.order,
+        masterId: item.master.id,
+        masterName: item.master.name,
+        masterAvatar: item.master.avatar,
       },
     };
   }
@@ -89,20 +111,28 @@ interface QueueStore {
   getMyQueueItem: (orderId: string) => QueueItem | undefined;
   hasQueueItem: (orderId: string) => boolean;
   getQueueItemByOrder: (orderId: string) => QueueItem | undefined;
+  generateRoutePlanForPool: (masterId: string, masterLocation: { lat: number; lng: number }, serviceType?: ServiceType) => {
+    items: RoutePlanItem[];
+    totalDistance: number;
+    totalDuration: number;
+    totalPrice: number;
+  };
   generateRoutePlanForMaster: (masterId: string, masterLocation: { lat: number; lng: number }, serviceType?: ServiceType) => {
     items: RoutePlanItem[];
     totalDistance: number;
     totalDuration: number;
     totalPrice: number;
   };
-  createRoutePackage: (masterId: string, masterLocation: { lat: number; lng: number }, serviceType?: ServiceType) => RoutePackage | null;
-  acceptRoutePackage: (packageId: string) => boolean;
+  createRoutePackage: (masterId: string, masterLocation: { lat: number; lng: number }, serviceType?: ServiceType, fromPool?: boolean) => RoutePackage | null;
+  acceptRoutePackage: (packageId: string, masterId: string) => boolean;
   updateRoutePackageStatus: (packageId: string, status: RoutePackage['status'], currentSequence?: number) => void;
   getRoutePackageById: (packageId: string) => RoutePackage | undefined;
   getActiveRoutePackagesByMaster: (masterId: string) => RoutePackage[];
   getCustomerRouteProgress: (orderId: string) => CustomerRouteProgress | null;
   getMasterDailyOverview: (masterId: string) => MasterDailyOverview;
+  startServiceAtStop: (packageId: string, orderId: string) => void;
   completeService: (itemId: string) => void;
+  assignQueueItemToMaster: (itemId: string, master: MasterInfo) => void;
 }
 
 const sortQueueItems = (items: QueueItem[]): QueueItem[] => {
@@ -207,18 +237,41 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     };
   },
 
+  assignQueueItemToMaster: (itemId, master) => {
+    set((state) => {
+      const items = state.queueItems.map((item) => {
+        if (item.id === itemId) {
+          const clean = sanitizeQueueItem(item);
+          return {
+            ...clean,
+            master,
+            order: {
+              ...clean.order,
+              masterId: master.id,
+              masterName: master.name,
+              masterAvatar: master.avatar,
+            },
+          };
+        }
+        return sanitizeQueueItem(item);
+      });
+      return { queueItems: sortQueueItems(items) };
+    });
+    console.log('[QueueStore] assignQueueItemToMaster:', itemId, '->', master.id);
+  },
+
   upgradePriority: (itemId, newPriority) => {
     set((state) => {
       const items = sortQueueItems(
         state.queueItems.map((item) =>
-          item.id === itemId
-            ? {
-                ...sanitizeQueueItem(item),
-                priority: newPriority,
-                priorityWeight: getPriorityWeight(newPriority),
-                order: { ...item.order, priority: newPriority },
-              }
-            : sanitizeQueueItem(item)
+            item.id === itemId
+              ? {
+                  ...sanitizeQueueItem(item),
+                  priority: newPriority,
+                  priorityWeight: getPriorityWeight(newPriority),
+                  order: { ...item.order, priority: newPriority },
+                }
+              : sanitizeQueueItem(item)
         )
       );
       return { queueItems: items };
@@ -268,6 +321,34 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     return item ? sanitizeQueueItem(item) : undefined;
   },
 
+  generateRoutePlanForPool: (masterId, masterLocation, serviceType) => {
+    const waitingItems = get()
+      .queueItems.filter((item) => item.status === 'waiting')
+      .map(sanitizeQueueItem);
+    
+    const filteredItems = serviceType
+      ? waitingItems.filter((item) => item.order.serviceType === serviceType)
+      : waitingItems;
+
+    const plan = generateRoutePlan(filteredItems, masterLocation, serviceType);
+    
+    plan.items = plan.items.map((planItem) => {
+      const queueItem = filteredItems.find((q) => q.orderId === planItem.orderId);
+      if (queueItem) {
+        return {
+          ...planItem,
+          queueNumber: queueItem.queueNumber,
+          queueStatus: queueItem.status,
+          masterId: queueItem.master.id,
+          masterName: queueItem.master.name,
+        };
+      }
+      return planItem;
+    });
+
+    return plan;
+  },
+
   generateRoutePlanForMaster: (masterId, masterLocation, serviceType) => {
     const masterItems = get()
       .queueItems.filter((item) => item.master.id === masterId)
@@ -290,8 +371,10 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     return plan;
   },
 
-  createRoutePackage: (masterId, masterLocation, serviceType) => {
-    const plan = get().generateRoutePlanForMaster(masterId, masterLocation, serviceType);
+  createRoutePackage: (masterId, masterLocation, serviceType, fromPool = true) => {
+    const plan = fromPool
+      ? get().generateRoutePlanForPool(masterId, masterLocation, serviceType)
+      : get().generateRoutePlanForMaster(masterId, masterLocation, serviceType);
     if (plan.items.length === 0) return null;
 
     const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -321,23 +404,46 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       };
     });
 
-    console.log('[QueueStore] createRoutePackage:', pkg.id, 'items:', pkg.items.length);
+    console.log('[QueueStore] createRoutePackage:', pkg.id, 'items:', pkg.items.length, 'fromPool:', fromPool);
     return pkg;
   },
 
-  acceptRoutePackage: (packageId) => {
+  acceptRoutePackage: (packageId, masterId) => {
     const pkg = get().getRoutePackageById(packageId);
     if (!pkg || pkg.accepted) return false;
 
+    const master = mockMasters.find((m) => m.id === masterId) || fallbackMaster(masterId);
+
     const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-    set((state) => ({
-      routePackages: state.routePackages.map((p) =>
-        p.id === packageId
-          ? { ...p, accepted: true, acceptedAt: now, status: 'accepted' as const }
-          : p
-      ),
-    }));
-    console.log('[QueueStore] acceptRoutePackage:', packageId);
+    set((state) => {
+      const updatedItems = state.queueItems.map((item) => {
+        if (pkg.items.some((pi) => pi.orderId === item.orderId)) {
+          const clean = sanitizeQueueItem(item);
+          return {
+            ...clean,
+            master,
+            order: {
+              ...clean.order,
+              masterId: master.id,
+              masterName: master.name,
+              masterAvatar: master.avatar,
+            },
+            routePackageId: packageId,
+          };
+        }
+        return sanitizeQueueItem(item);
+      });
+
+      return {
+        routePackages: state.routePackages.map((p) =>
+          p.id === packageId
+            ? { ...p, masterId, accepted: true, acceptedAt: now, status: 'accepted' as const }
+            : p
+        ),
+        queueItems: sortQueueItems(updatedItems),
+      };
+    });
+    console.log('[QueueStore] acceptRoutePackage:', packageId, 'master:', masterId);
     return true;
   },
 
@@ -359,6 +465,24 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       (p) => p.masterId === masterId && (p.status === 'pending' || p.status === 'accepted' || p.status === 'in_progress')
     ),
 
+  startServiceAtStop: (packageId, orderId) => {
+    const pkg = get().getRoutePackageById(packageId);
+    if (!pkg) return;
+
+    const stopItem = pkg.items.find((i) => i.orderId === orderId);
+    if (!stopItem) return;
+
+    const queueItem = get().queueItems.find((i) => i.orderId === orderId);
+    if (!queueItem) return;
+
+    get().updateQueueStatus(queueItem.id, 'serving');
+
+    const sequence = stopItem.sequence;
+    get().updateRoutePackageStatus(packageId, 'in_progress', sequence);
+
+    console.log('[QueueStore] startServiceAtStop:', packageId, orderId, 'seq:', sequence);
+  },
+
   getCustomerRouteProgress: (orderId) => {
     const queueItem = get().getQueueItemByOrder(orderId);
     if (!queueItem) return null;
@@ -369,17 +493,17 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       : get().routePackages.find((p) => p.items.some((i) => i.orderId === orderId));
 
     if (!routePkg) {
-      const waitingItems = get().queueItems.filter(
-        (i) => i.status === 'waiting' || i.status === 'called' || i.status === 'serving'
+      const activeItems = get().queueItems.filter(
+        (i) => (i.status === 'waiting' || i.status === 'called' || i.status === 'serving')
       );
-      const sorted = sortQueueItems(waitingItems);
+      const sorted = sortQueueItems(activeItems);
       const myIdx = sorted.findIndex((i) => i.orderId === orderId);
       return {
         orderId: cleanItem.orderId,
         orderNo: cleanItem.order.orderNo,
         routePackageId: '',
         master: cleanItem.master,
-        totalStops: Math.max(myIdx + 1, 1),
+        totalStops: Math.max(sorted.length, 1),
         currentStop: cleanItem.status === 'serving' ? 1 : 0,
         stopsAhead: Math.max(myIdx, 0),
         cumulativeDistanceToMe: 0,
@@ -392,18 +516,26 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     const myStop = routePkg.items.find((i) => i.orderId === orderId);
     if (!myStop) return null;
 
-    const currentStop = routePkg.currentSequence || 0;
-    const myIdx = myStop.sequence;
-    const stopsAhead = Math.max(myIdx - currentStop, 0);
     const servingItem = get().queueItems.find((i) => i.status === 'serving');
-    const effectiveCurrentStop = servingItem
-      ? routePkg.items.findIndex((i) => i.orderId === servingItem.orderId) + 1
-      : currentStop;
+    const servingOrderId = servingItem?.orderId;
 
-    const stops = routePkg.items.filter((i) => i.sequence <= myIdx);
+    const completedCount = routePkg.items.filter((item) => {
+      const q = get().queueItems.find((qi) => qi.orderId === item.orderId);
+      return q?.status === 'completed';
+    }).length;
+
+    let currentStopIdx = servingOrderId
+      ? routePkg.items.findIndex((i) => i.orderId === servingOrderId)
+      : completedCount;
+
+    const myIdx = myStop.sequence - 1;
+
+    const stopsAhead = Math.max(myIdx - currentStopIdx, 0);
+
+    const stops = routePkg.items.filter((_, i) => i <= myIdx);
     const cumulativeDistToMe = stops.length > 0 ? stops[stops.length - 1].cumulativeDistance : 0;
-    const remainingDist = cumulativeDistToMe - (routePkg.items[effectiveCurrentStop - 1]?.cumulativeDistance || 0);
-    const etaMinutes = Math.max(Math.round(remainingDist * 10 + stopsAhead * 15), 5);
+    const remainingDist = cumulativeDistToMe - (routePkg.items[currentStopIdx]?.cumulativeDistance || 0);
+    const etaMinutes = Math.max(Math.round(remainingDist * 10 + stopsAhead * 15), stopsAhead === 0 ? 0 : 5);
     const eta = new Date(Date.now() + etaMinutes * 60000);
 
     return {
@@ -412,10 +544,10 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       routePackageId: routePkg.id,
       master: cleanItem.master,
       totalStops: routePkg.items.length,
-      currentStop: effectiveCurrentStop,
-      stopsAhead: myIdx > effectiveCurrentStop ? myIdx - effectiveCurrentStop : 0,
+      currentStop: currentStopIdx + 1,
+      stopsAhead,
       cumulativeDistanceToMe: cumulativeDistToMe,
-      estimatedArrival: eta.toTimeString().slice(0, 5),
+      estimatedArrival: etaMinutes === 0 ? '已到达' : eta.toTimeString().slice(0, 5),
       estimatedWaitMinutes: etaMinutes,
       allStops: routePkg.items,
     };
@@ -459,7 +591,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
           return q?.status === 'completed';
         }).length;
         if (doneCount >= routePkg.items.length) {
-          get().updateRoutePackageStatus(routePkg.id, 'completed');
+          get().updateRoutePackageStatus(routePkg.id, 'completed', routePkg.items.length);
         } else {
           const seq = routePkg.items.find((i) => i.orderId === item.orderId)?.sequence || 0;
           get().updateRoutePackageStatus(routePkg.id, 'in_progress', seq);

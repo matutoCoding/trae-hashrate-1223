@@ -525,6 +525,26 @@
   padding: $spacing-xs $spacing-sm;
 }
 
+.stopActionBtnPrimary {
+  background: linear-gradient(135deg, $color-success 0%, #66BB6A 100%);
+  color: $color-text-white;
+}
+
+.stopActionBtnSecondary {
+  background: $color-bg-primary-light;
+  color: $color-primary;
+}
+
+.routeStatValueActive {
+  color: $color-warning;
+  font-weight: $font-weight-bold;
+}
+
+.routeStatValueDone {
+  color: $color-text-tertiary;
+  text-decoration: line-through;
+}
+
 .routeSummaryInner {
   display: flex;
   margin-top: $spacing-md;

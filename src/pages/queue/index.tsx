@@ -5,6 +5,7 @@ import classnames from 'classnames';
 import styles from './index.module.scss';
 import { useQueueStore } from '@/store/queue';
 import { useUserStore } from '@/store/user';
+import { useMatchStore } from '@/store/match';
 import QueueItemComp from '@/components/QueueItem';
 import Empty from '@/components/Empty';
 import Tag from '@/components/Tag';
@@ -35,15 +36,19 @@ const QueuePage: React.FC = () => {
     queueItems,
     callNext,
     upgradePriority,
-    generateRoutePlanForMaster,
+    generateRoutePlanForPool,
     createRoutePackage,
     acceptRoutePackage,
     getActiveRoutePackagesByMaster,
     getCustomerRouteProgress,
     updateRoutePackageStatus,
     getQueueItemByOrder,
+    startServiceAtStop,
+    completeService,
+    getRoutePackageById,
   } = useQueueStore();
   const { role, currentUser } = useUserStore();
+  const { lockOrderForMaster, matches } = useMatchStore();
   const isMaster = role === 'master' && currentUser;
   const isCustomer = role === 'customer' && currentUser;
 
@@ -77,12 +82,12 @@ const QueuePage: React.FC = () => {
 
   const routePlan = useMemo(() => {
     if (!isMaster || activeView !== 'route' || currentRoutePackage?.accepted) return null;
-    return generateRoutePlanForMaster(
+    return generateRoutePlanForPool(
       currentUser.id,
       masterLocation,
       serviceTypeFilter === 'all' ? undefined : serviceTypeFilter
     );
-  }, [queueItems, serviceTypeFilter, currentUser, masterLocation, generateRoutePlanForMaster, activeView, isMaster, currentRoutePackage]);
+  }, [queueItems, serviceTypeFilter, currentUser, masterLocation, generateRoutePlanForPool, activeView, isMaster, currentRoutePackage]);
 
   useEffect(() => {
     if (isMaster && currentUser && activeView === 'route') {
@@ -137,7 +142,8 @@ const QueuePage: React.FC = () => {
     const pkg = createRoutePackage(
       currentUser.id,
       masterLocation,
-      serviceTypeFilter === 'all' ? undefined : serviceTypeFilter
+      serviceTypeFilter === 'all' ? undefined : serviceTypeFilter,
+      true
     );
     if (pkg) {
       setCurrentRoutePackage(pkg);
@@ -148,27 +154,48 @@ const QueuePage: React.FC = () => {
   };
 
   const handleAcceptRoutePackage = () => {
-    if (!currentRoutePackage) return;
-    const ok = acceptRoutePackage(currentRoutePackage.id);
-    if (ok) {
-      updateRoutePackageStatus(currentRoutePackage.id, 'in_progress', 0);
-      setCurrentRoutePackage({ ...currentRoutePackage, accepted: true, status: 'in_progress' });
-      Taro.showToast({ title: '已接受这趟路线', icon: 'success' });
-    }
+    if (!currentRoutePackage || !currentUser) return;
+    Taro.showModal({
+      title: '确认接单',
+      content: `接受这趟路线？共 ${currentRoutePackage.items.length} 单全部由您接单，接单后这些订单将全归您名下。`,
+      success: (res) => {
+        if (res.confirm) {
+          const ok = acceptRoutePackage(currentRoutePackage.id, currentUser.id);
+          if (ok) {
+            const masterInfo = {
+              id: currentUser.id,
+              name: 'name' in currentUser ? (currentUser as any).name : '师傅',
+              avatar: 'avatar' in currentUser ? (currentUser as any).avatar : '',
+            } as any;
+            currentRoutePackage.items.forEach((item) => {
+              lockOrderForMaster(item.orderId, masterInfo);
+            });
+            const updatedPkg = getRoutePackageById(currentRoutePackage.id);
+            if (updatedPkg) setCurrentRoutePackage(updatedPkg);
+            Taro.showToast({ title: '已接受这趟路线', icon: 'success' });
+          }
+        }
+      },
+    });
   };
 
-  const handleMarkStopComplete = (itemSeq: number, orderId: string) => {
+  const handleStartService = (orderId: string) => {
+    if (!currentRoutePackage) return;
+    startServiceAtStop(currentRoutePackage.id, orderId);
+    const updatedPkg = getRoutePackageById(currentRoutePackage.id);
+    if (updatedPkg) setCurrentRoutePackage({ ...updatedPkg });
+    Taro.showToast({ title: '开始服务', icon: 'success' });
+  };
+
+  const handleCompleteService = (orderId: string) => {
     if (!currentRoutePackage) return;
     const qi = getQueueItemByOrder(orderId);
     if (qi) {
-      useQueueStore.getState().updateQueueStatus(qi.id, itemSeq === 1 ? 'serving' : 'completed');
-      if (itemSeq > 1) {
-        useQueueStore.getState().completeService(qi.id);
-      }
+      completeService(qi.id);
+      const updatedPkg = getRoutePackageById(currentRoutePackage.id);
+      if (updatedPkg) setCurrentRoutePackage({ ...updatedPkg });
+      Taro.showToast({ title: '本站已完成', icon: 'success' });
     }
-    updateRoutePackageStatus(currentRoutePackage.id, 'in_progress', itemSeq);
-    setCurrentRoutePackage((prev) => (prev ? { ...prev, currentSequence: itemSeq } : prev));
-    Taro.showToast({ title: `第${itemSeq}站已处理`, icon: 'success' });
   };
 
   return (
@@ -390,15 +417,23 @@ const QueuePage: React.FC = () => {
             <View className={styles.routeList}>
               {currentRoutePackage || routePlan ? (
                 (currentRoutePackage?.items || routePlan?.items || []).map((item, idx) => {
-                  const isCurrentStop = currentRoutePackage?.currentSequence === item.sequence;
-                  const isCompleted = currentRoutePackage?.status === 'completed'
-                    || (currentRoutePackage?.currentSequence && item.sequence < currentRoutePackage.currentSequence);
+                  const queueItem = getQueueItemByOrder(item.orderId);
+                  const stopStatus = queueItem?.status || 'waiting';
+                  const isCompleted = stopStatus === 'completed';
+                  const isServing = stopStatus === 'serving';
+                  const isCalled = stopStatus === 'called';
+                  const canStart = currentRoutePackage?.accepted && stopStatus === 'waiting';
+                  const canComplete = isServing;
+                  const isNextAvailable = currentRoutePackage?.accepted && (
+                    (idx === 0 && stopStatus === 'waiting') ||
+                    (idx > 0 && getQueueItemByOrder((currentRoutePackage?.items || [])[idx - 1]?.orderId)?.status === 'completed')
+                  );
                   return (
                     <View
                       key={item.orderId}
                       className={classnames(
                         styles.routeItem,
-                        isCurrentStop && styles.routeItemCurrent,
+                        isServing && styles.routeItemCurrent,
                         isCompleted && styles.routeItemCompleted
                       )}
                       onClick={() => handleNavigateToOrder(item.orderId)}
@@ -407,12 +442,12 @@ const QueuePage: React.FC = () => {
                         <View
                           className={classnames(
                             styles.routeSequence,
-                            isCurrentStop && styles.routeSequenceCurrent,
+                            isServing && styles.routeSequenceCurrent,
                             isCompleted && styles.routeSequenceDone
                           )}
                         >
                           <Text className={styles.routeSequenceText}>
-                            {isCompleted ? '✓' : item.sequence}
+                            {isCompleted ? '✓' : isServing ? '⏳' : item.sequence}
                           </Text>
                         </View>
                         <View className={styles.routeItemInfo}>
@@ -453,23 +488,41 @@ const QueuePage: React.FC = () => {
                           <Text className={styles.routeStatValue}>{item.cumulativeDistance}km</Text>
                         </View>
                         <View className={styles.routeStat}>
-                          <Text className={styles.routeStatLabel}>优先级权重</Text>
-                          <Text className={styles.routeStatValue}>×{item.priorityWeight}</Text>
+                          <Text className={styles.routeStatLabel}>状态</Text>
+                          <Text className={classnames(
+                            styles.routeStatValue,
+                            isServing && styles.routeStatValueActive,
+                            isCompleted && styles.routeStatValueDone
+                          )}>
+                            {stopStatus === 'waiting' ? '等待中' : stopStatus === 'serving' ? '服务中' : stopStatus === 'called' ? '已叫号' : '已完成'}
+                          </Text>
                         </View>
                         {currentRoutePackage?.accepted && !isCompleted && (
                           <View
-                            className={styles.stopActionBtn}
+                            className={classnames(
+                              styles.stopActionBtn,
+                              canComplete && styles.stopActionBtnPrimary,
+                              canStart && isNextAvailable && styles.stopActionBtnSecondary
+                            )}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleMarkStopComplete(item.sequence, item.orderId);
+                              if (canComplete) {
+                                handleCompleteService(item.orderId);
+                              } else if (canStart && isNextAvailable) {
+                                handleStartService(item.orderId);
+                              }
                             }}
                           >
                             <Text>
-                              {isCurrentStop
-                                ? '完成本站'
-                                : currentRoutePackage.currentSequence === item.sequence - 1
-                                  ? '开始服务'
-                                  : `到达第${item.sequence}站`}
+                              {canComplete
+                                ? '✅ 完成本站'
+                                : canStart && isNextAvailable
+                                  ? '▶️ 开始服务'
+                                  : isServing
+                                    ? '⏳ 服务中...'
+                                    : isCalled
+                                      ? '已叫号，等待客户'
+                                      : '等待上一站完成'}
                             </Text>
                           </View>
                         )}

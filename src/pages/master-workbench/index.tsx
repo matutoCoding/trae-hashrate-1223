@@ -47,15 +47,27 @@ const MasterWorkbench: React.FC = () => {
     [queueItems, masterId]
   );
 
-  const pendingMatches = useMemo(() => {
+  const waitingQueueItems = useMemo(
+    () => myQueueItems.filter((i) => i.status === 'waiting' || i.status === 'called'),
+    [myQueueItems]
+  );
+
+  const matchedPending = useMemo(() => {
     const matches = getMatchesByMaster(masterId);
     return matches.filter((m) => {
       const lockStatus = isOrderLocked(m.order.id);
       if (lockStatus.locked && lockStatus.master?.id !== masterId) return false;
       const hasQueueItem = myQueueItems.some((q) => q.orderId === m.order.id && q.status !== 'completed');
-      return !hasQueueItem && (m.customerWilling || m.masterWilling);
+      return !hasQueueItem && m.customerWilling && m.masterWilling;
     });
   }, [getMatchesByMaster, masterId, myQueueItems, isOrderLocked]);
+
+  const pendingList = useMemo(() => {
+    const list: (MatchItem | QueueItem)[] = [];
+    matchedPending.forEach((m) => list.push(m));
+    waitingQueueItems.forEach((q) => list.push(q));
+    return list;
+  }, [matchedPending, waitingQueueItems]);
 
   const activeRoutes = useMemo(
     () => getActiveRoutePackagesByMaster(masterId),
@@ -63,7 +75,7 @@ const MasterWorkbench: React.FC = () => {
   );
 
   const servingItems = useMemo(
-    () => myQueueItems.filter((i) => i.status === 'serving' || i.status === 'called'),
+    () => myQueueItems.filter((i) => i.status === 'serving'),
     [myQueueItems]
   );
 
@@ -75,8 +87,10 @@ const MasterWorkbench: React.FC = () => {
     });
   }, [myQueueItems]);
 
+  const pendingCount = pendingList.length;
+
   const sectionCounts: Record<SectionKey, number> = {
-    pending: pendingMatches.length,
+    pending: pendingCount,
     routes: activeRoutes.length,
     serving: servingItems.length,
     completed: completedItems.length,
@@ -96,7 +110,8 @@ const MasterWorkbench: React.FC = () => {
   };
 
   const handleAcceptRoute = (pkg: RoutePackage) => {
-    useQueueStore.getState().acceptRoutePackage(pkg.id);
+    if (!masterId) return;
+    useQueueStore.getState().acceptRoutePackage(pkg.id, masterId);
     useQueueStore.getState().updateRoutePackageStatus(pkg.id, 'in_progress', 0);
     Taro.showToast({ title: '已接受这趟路线', icon: 'success' });
   };
@@ -113,51 +128,77 @@ const MasterWorkbench: React.FC = () => {
     Taro.switchTab({ url: '/pages/match/index' });
   };
 
-  const renderPendingCard = (match: MatchItem) => (
-    <View key={match.id} className={styles.card} onClick={handleGoToOrders}>
-      <View className={styles.cardHeader}>
-        <View className={styles.cardTitle}>
-          <Text className={styles.cardService}>{match.order.serviceName}</Text>
-          <Tag
-            text={match.customerWilling ? '客户有意向' : '待客户选择'}
-            color={match.customerWilling ? 'success' : 'default'}
-            size="sm"
-          />
-          <Tag text={getPriorityLabel(match.order.priority)} color={match.order.priority === 'normal' ? 'default' : match.order.priority === 'urgent' ? 'danger' : 'warning'} size="sm" />
+  const renderPendingCard = (item: MatchItem | QueueItem) => {
+    const isMatchItem = 'matchScore' in item;
+    if (isMatchItem) {
+      const match = item as MatchItem;
+      return (
+        <View key={match.id} className={styles.card} onClick={handleGoToOrders}>
+          <View className={styles.cardHeader}>
+            <View className={styles.cardTitle}>
+              <Text className={styles.cardService}>{match.order.serviceName}</Text>
+              <Tag text="互选成功" color="success" size="sm" />
+              <Tag text={getPriorityLabel(match.order.priority)} color={match.order.priority === 'normal' ? 'default' : match.order.priority === 'urgent' ? 'danger' : 'warning'} size="sm" />
+            </View>
+            <Text className={styles.cardPrice}>{formatPrice(match.order.price)}</Text>
+          </View>
+          <View className={styles.cardBody}>
+            <View className={styles.cardInfoRow}>
+              <Text className={styles.cardInfoLabel}>📍 {match.order.address}</Text>
+              <Tag text={formatDistance(match.distance)} color="primary" size="sm" />
+            </View>
+            <View className={styles.cardInfoRow}>
+              <Text className={styles.cardInfoLabel}>👤 {match.order.customerName}</Text>
+              <Text className={styles.cardInfoValue}>{match.order.quantity}件</Text>
+            </View>
+            <View className={styles.cardInfoRow}>
+              <Text className={styles.cardInfoLabel}>✨ 契合度</Text>
+              <Text className={styles.cardInfoScore}>{match.matchScore}分</Text>
+            </View>
+          </View>
+          <View className={styles.cardActions}>
+            <View className={styles.actionBtnPrimary} onClick={handleGoToOrders}>
+              <Text>去接单 →</Text>
+            </View>
+          </View>
         </View>
-        <Text className={styles.cardPrice}>{formatPrice(match.order.price)}</Text>
+      );
+    }
+    const queueItem = item as QueueItem;
+    return (
+      <View key={queueItem.id} className={styles.card} onClick={handleGoToQueue}>
+        <View className={styles.cardHeader}>
+          <View className={styles.cardTitle}>
+            <Text className={styles.cardService}>{queueItem.order.serviceName}</Text>
+            <Tag text={`第${queueItem.queueNumber}号`} color="info" size="sm" />
+            <Tag text={getPriorityLabel(queueItem.priority)} color={queueItem.priority === 'normal' ? 'default' : queueItem.priority === 'urgent' ? 'danger' : 'warning'} size="sm" />
+          </View>
+          <Text className={styles.cardPrice}>{formatPrice(queueItem.order.price)}</Text>
+        </View>
+        <View className={styles.cardBody}>
+          <View className={styles.cardInfoRow}>
+            <Text className={styles.cardInfoLabel}>📍 {queueItem.order.address}</Text>
+            <Text className={styles.cardInfoValue}>
+              {queueItem.status === 'waiting' ? '排队中' : '已叫号'}
+            </Text>
+          </View>
+          <View className={styles.cardInfoRow}>
+            <Text className={styles.cardInfoLabel}>👤 {queueItem.order.customerName}</Text>
+            <Text className={styles.cardInfoValue}>{queueItem.order.quantity}件</Text>
+          </View>
+          <View className={styles.cardInfoRow}>
+            <Text className={styles.cardInfoLabel}>🔢 订单号</Text>
+            <Text className={styles.cardInfoValue}>{queueItem.order.orderNo}</Text>
+          </View>
+        </View>
+        <View className={styles.cardActions}>
+          <View className={styles.actionBtnSecondary} onClick={handleGoToQueue}>
+            <Text>查看排队进度 →</Text>
+          </View>
+        </View>
       </View>
-      <View className={styles.cardBody}>
-        <View className={styles.cardInfoRow}>
-          <Text className={styles.cardInfoLabel}>📍 {match.order.address}</Text>
-          <Tag text={formatDistance(match.distance)} color="primary" size="sm" />
-        </View>
-        <View className={styles.cardInfoRow}>
-          <Text className={styles.cardInfoLabel}>👤 {match.order.customerName}</Text>
-          <Text className={styles.cardInfoValue}>{match.order.quantity}件</Text>
-        </View>
-        <View className={styles.cardInfoRow}>
-          <Text className={styles.cardInfoLabel}>✨ 契合度</Text>
-          <Text className={styles.cardInfoScore}>{match.matchScore}分</Text>
-        </View>
-      </View>
-      <View className={styles.cardWilling}>
-        <View className={styles.willingItem}>
-          <Text className={styles.willingLabel}>客户意愿</Text>
-          <Text className={match.customerWilling ? styles.willingTrue : styles.willingFalse}>
-            {match.customerWilling ? '✅ 愿意' : '⚪ 待选择'}
-          </Text>
-        </View>
-        <View className={styles.willingItem}>
-          <Text className={styles.willingLabel}>我的意愿</Text>
-          <Text className={match.masterWilling ? styles.willingTrue : styles.willingFalse}>
-            {match.masterWilling ? '✅ 愿意' : '⚪ 待选择'}
-          </Text>
-        </View>
-        {match.isMatched && <Tag text="🎉 互选成功" color="success" />}
-      </View>
-    </View>
-  );
+    );
+  };
 
   const renderRouteCard = (pkg: RoutePackage) => (
     <View key={pkg.id} className={styles.card}>
@@ -305,7 +346,7 @@ const MasterWorkbench: React.FC = () => {
         <View className={styles.overviewGrid}>
           <View className={styles.overviewCard}>
             <Text className={styles.overviewIcon}>📋</Text>
-            <Text className={styles.overviewValue}>{overview.pendingOrders}</Text>
+            <Text className={styles.overviewValue}>{pendingCount}</Text>
             <Text className={styles.overviewLabel}>待接单</Text>
           </View>
           <View className={styles.overviewCard}>
@@ -366,8 +407,8 @@ const MasterWorkbench: React.FC = () => {
       <ScrollView scrollY style={{ height: 'calc(100vh - 950rpx)' }}>
         <View className={styles.content}>
           {activeSection === 'pending' &&
-            (pendingMatches.length > 0 ? (
-              pendingMatches.map(renderPendingCard)
+            (pendingList.length > 0 ? (
+              pendingList.map(renderPendingCard)
             ) : (
               <Empty text="暂无待接订单，去匹配页看看吧" icon="📭" />
             ))}
