@@ -10,8 +10,9 @@ import type { ServiceType, PriorityLevel } from '@/types/service';
 
 const PublishServicePage: React.FC = () => {
   const router = useRouter();
-  const { serviceItems, addOrder, updateOrder } = useServiceStore();
+  const { serviceItems, addOrder } = useServiceStore();
   const { currentUser } = useUserStore();
+  const { generateMatchesForOrder } = useMatchStore();
 
   const preSelectedType = router.params?.type as ServiceType;
 
@@ -54,7 +55,7 @@ const PublishServicePage: React.FC = () => {
       content: `确认发布"${selectedService?.name}"服务需求吗？\n预估费用：¥${totalPrice}`,
       success: (res) => {
         if (res.confirm) {
-          addOrder({
+          const newOrder = addOrder({
             customerId: currentUser?.id || 'c1',
             customerName: currentUser?.name || '用户',
             customerAvatar: currentUser?.avatar || '',
@@ -69,6 +70,8 @@ const PublishServicePage: React.FC = () => {
             price: totalPrice,
             customerWilling: true,
           });
+
+          generateMatchesForOrder(newOrder);
 
           Taro.showToast({ title: '发布成功', icon: 'success' });
           setTimeout(() => {
