@@ -422,3 +422,322 @@
   color: $color-text-primary;
   font-weight: $font-weight-medium;
 }
+
+.routePackageCard {
+  background: $color-bg-card;
+  margin: 0 $page-padding $spacing-md;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  border: 2rpx dashed $color-primary-light;
+}
+
+.routePackageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.routePackageTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.routePackageSubtitle {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+}
+
+.routePackageMetrics {
+  display: flex;
+  background: $color-bg-hover;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.routeMetricItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.routeMetricValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.routeMetricLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.routePackageActions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.createRouteBtn,
+.acceptRouteBtn,
+.discardBtn,
+.stopActionBtn {
+  flex: 1;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-button;
+  text-align: center;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.createRouteBtn {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  width: 100%;
+}
+
+.acceptRouteBtn {
+  background: linear-gradient(135deg, $color-success 0%, #66BB6A 100%);
+  color: $color-text-white;
+}
+
+.discardBtn {
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+}
+
+.stopActionBtn {
+  flex: 1.2;
+  background: $color-primary-light;
+  color: $color-primary;
+  font-size: $font-size-sm;
+  padding: $spacing-xs $spacing-sm;
+}
+
+.routeSummaryInner {
+  display: flex;
+  margin-top: $spacing-md;
+}
+
+.routeSequenceCurrent {
+  background: linear-gradient(135deg, $color-warning 0%, #FFB74D 100%);
+  box-shadow: 0 0 0 4rpx rgba(255, 152, 0, 0.2);
+}
+
+.routeSequenceDone {
+  background: linear-gradient(135deg, $color-success 0%, #66BB6A 100%);
+}
+
+.routeItemCurrent {
+  border: 2rpx solid $color-warning;
+  box-shadow: 0 4rpx 20rpx rgba(255, 152, 0, 0.15);
+}
+
+.routeItemCompleted {
+  opacity: 0.6;
+  background: $color-bg-hover;
+}
+
+.customerProgress {
+  padding: 0 $page-padding;
+}
+
+.progressHeader {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.progressMasterInfo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.progressMasterAvatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-round;
+  background: $color-bg-hover;
+}
+
+.progressMasterName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+}
+
+.progressMasterRating {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+  display: block;
+}
+
+.progressTimeline {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.progressStats {
+  display: flex;
+  border-bottom: 1rpx solid $color-divider;
+  padding-bottom: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.progressStatItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.progressStatValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.progressStatLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.progressEtaCard {
+  background: linear-gradient(135deg, $color-bg-primary-light 0%, #FFFFFF 100%);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  text-align: center;
+  margin-bottom: $spacing-md;
+}
+
+.progressEtaTitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  display: block;
+}
+
+.progressEtaValue {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  display: block;
+  margin: $spacing-xs 0;
+}
+
+.progressEtaNote {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  display: block;
+}
+
+.progressStopsList {
+  margin-top: $spacing-md;
+}
+
+.progressStopsTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: block;
+}
+
+.progressStop {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.progressStopSeq {
+  width: 56rpx;
+  height: 56rpx;
+  background: $color-bg-hover;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.progressStopSeqText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-secondary;
+}
+
+.progressStopSeqMine {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+}
+
+.progressStopSeqMine .progressStopSeqText {
+  color: $color-text-white;
+}
+
+.progressStopSeqCurrent {
+  background: linear-gradient(135deg, $color-warning 0%, #FFB74D 100%);
+  box-shadow: 0 0 0 4rpx rgba(255, 152, 0, 0.2);
+}
+
+.progressStopInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.progressStopName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.progressStopAddr {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.progressStopMine {
+  background: $color-bg-primary-light;
+  border-radius: $radius-md;
+  padding: $spacing-md !important;
+}
+
+.progressStopDone {
+  opacity: 0.5;
+}
+
+.progressStopDone .progressStopSeq {
+  background: linear-gradient(135deg, $color-success 0%, #66BB6A 100%);
+}
+
+.progressStopDone .progressStopSeqText {
+  color: $color-text-white;
+}

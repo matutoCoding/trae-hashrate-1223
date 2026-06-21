@@ -373,3 +373,161 @@
   font-size: $font-size-sm;
   color: $color-warning;
 }
+
+.myOrderBadge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  padding: 8rpx 24rpx;
+  border-radius: $radius-lg 0 $radius-md 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  z-index: 1;
+}
+
+.progressCard {
+  margin: $spacing-md 0 $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  background: linear-gradient(135deg, $color-bg-primary-light 0%, $color-bg-hover 100%);
+  border-radius: $radius-lg;
+  border: 1rpx solid rgba(46, 125, 50, 0.15);
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 1rpx solid rgba(46, 125, 50, 0.1);
+}
+
+.progressMasterRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.progressAvatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-round;
+  border: 3rpx solid $color-primary-light;
+}
+
+.progressMasterName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+}
+
+.progressMasterMeta {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  display: block;
+  margin-top: 4rpx;
+}
+
+.progressGrid {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.progressItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-sm 4rpx;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: $radius-md;
+}
+
+.progressNum {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  line-height: 1.2;
+}
+
+.progressTxt {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.progressEta {
+  background: $color-bg-card;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  text-align: center;
+  margin-bottom: $spacing-md;
+  border: 1rpx solid rgba(46, 125, 50, 0.1);
+}
+
+.progressEtaLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  display: block;
+}
+
+.progressEtaValue {
+  font-size: 52rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  display: block;
+  margin: $spacing-xs 0;
+  letter-spacing: 2rpx;
+}
+
+.progressEtaNote {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: block;
+}
+
+.progressStopsMini {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  flex-wrap: wrap;
+  padding: $spacing-sm 0;
+}
+
+.progressStopMini {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.progressStopDotMini {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: $radius-round;
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  font-weight: $font-weight-semibold;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+}
+
+.progressStopDoneMini .progressStopDotMini {
+  background: $color-bg-primary-light;
+  color: $color-success;
+}
+
+.progressStopMineMini .progressStopDotMini {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  transform: scale(1.2);
+  border-color: rgba(46, 125, 50, 0.2);
+  box-shadow: 0 0 0 6rpx rgba(46, 125, 50, 0.15);
+}

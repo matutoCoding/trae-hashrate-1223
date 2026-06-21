@@ -14,12 +14,13 @@ interface MatchStore {
   matches: MatchItem[];
   generateMatchesForOrder: (order: ServiceOrder, masters?: MasterInfo[]) => void;
   setCustomerWilling: (matchId: string, willing: boolean) => boolean;
-  setMasterWilling: (matchId: string, willing: boolean) => boolean;
+  setMasterWilling: (orderIdOrMatchId: string, masterIdOrWilling: string | boolean, willingParam?: boolean) => boolean;
   lockOrderForMaster: (orderId: string, master: MasterInfo) => void;
   isOrderLocked: (orderId: string) => { locked: boolean; master?: MasterInfo };
   getMatchesByOrder: (orderId: string) => MatchItem[];
   getMatchesByMaster: (masterId: string) => MatchItem[];
   getMutualMatches: () => MatchItem[];
+  findMatchByOrderAndMaster: (orderId: string, masterId: string) => MatchItem | undefined;
 }
 
 export const useMatchStore = create<MatchStore>((set, get) => ({
@@ -75,7 +76,23 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
     console.log('[MatchStore] setCustomerWilling:', matchId, willing);
     return true;
   },
-  setMasterWilling: (matchId, willing) => {
+  setMasterWilling: (orderIdOrMatchId, masterIdOrWilling, willingParam) => {
+    let matchId: string | undefined;
+    let willing: boolean;
+
+    if (typeof masterIdOrWilling === 'boolean') {
+      matchId = orderIdOrMatchId;
+      willing = masterIdOrWilling;
+    } else {
+      const match = get().findMatchByOrderAndMaster(orderIdOrMatchId, masterIdOrWilling);
+      if (!match) {
+        console.log('[MatchStore] setMasterWilling: match not found', orderIdOrMatchId, masterIdOrWilling);
+        return false;
+      }
+      matchId = match.id;
+      willing = willingParam ?? true;
+    }
+
     const match = get().matches.find((m) => m.id === matchId);
     if (!match) return false;
     
@@ -96,7 +113,7 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
       });
       return { matches: sortByMatchScore(updated) };
     });
-    console.log('[MatchStore] setMasterWilling:', matchId, willing);
+    console.log('[MatchStore] setMasterWilling:', matchId, willing, 'order:', match.order.id, 'master:', match.master.id);
     return true;
   },
   lockOrderForMaster: (orderId, master) => {
@@ -125,6 +142,8 @@ export const useMatchStore = create<MatchStore>((set, get) => ({
   getMatchesByOrder: (orderId) => get().matches.filter((m) => m.order.id === orderId),
   getMatchesByMaster: (masterId) => get().matches.filter((m) => m.master.id === masterId),
   getMutualMatches: () => get().matches.filter((m) => m.isMatched),
+  findMatchByOrderAndMaster: (orderId, masterId) =>
+    get().matches.find((m) => m.order.id === orderId && m.master.id === masterId),
 }));
 
 useMatchStore.subscribe((state) => {

@@ -9,7 +9,8 @@ export default defineAppConfig({
     'pages/order-detail/index',
     'pages/publish-service/index',
     'pages/queue-detail/index',
-    'pages/master-orders/index'
+    'pages/master-orders/index',
+    'pages/master-workbench/index'
   ],
   window: {
     backgroundTextStyle: 'light',

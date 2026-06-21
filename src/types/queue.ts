@@ -18,6 +18,7 @@ export interface QueueItem {
   endTime?: string;
   estimatedWaitTime: number;
   position: number;
+  routePackageId?: string;
 }
 
 export interface RoutePlanItem {
@@ -35,6 +36,37 @@ export interface RoutePlanItem {
   cumulativeDistance: number;
   sequence: number;
   estimatedArrival: string;
+  queueNumber?: number;
+  queueStatus?: QueueStatus;
+}
+
+export interface RoutePackage {
+  id: string;
+  masterId: string;
+  serviceType?: string;
+  createdAt: string;
+  accepted: boolean;
+  acceptedAt?: string;
+  status: 'pending' | 'accepted' | 'in_progress' | 'completed';
+  items: RoutePlanItem[];
+  totalDistance: number;
+  totalDuration: number;
+  totalPrice: number;
+  currentSequence?: number;
+}
+
+export interface CustomerRouteProgress {
+  orderId: string;
+  orderNo: string;
+  routePackageId: string;
+  master: MasterInfo;
+  totalStops: number;
+  currentStop: number;
+  stopsAhead: number;
+  cumulativeDistanceToMe: number;
+  estimatedArrival: string;
+  estimatedWaitMinutes: number;
+  allStops: RoutePlanItem[];
 }
 
 export interface QueueInfo {

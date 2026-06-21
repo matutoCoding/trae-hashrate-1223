@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView } from '@tarojs/components';
+import React, { useState, useMemo, useEffect } from 'react';
+import { View, Text, ScrollView, Image } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import classnames from 'classnames';
 import styles from './index.module.scss';
@@ -11,6 +11,7 @@ import Empty from '@/components/Empty';
 import Tag from '@/components/Tag';
 import RateStars from '@/components/RateStars';
 import type { MatchItem } from '@/types/match';
+import type { CustomerRouteProgress } from '@/types/queue';
 
 type TabType = 'all' | 'matched' | 'waiting';
 
@@ -19,7 +20,8 @@ const MatchPage: React.FC = () => {
   const { matches, setCustomerWilling, setMasterWilling, lockOrderForMaster, isOrderLocked } = useMatchStore();
   const { role, currentUser } = useUserStore();
   const { updateOrder } = useServiceStore();
-  const { addToQueue, getMyQueueItem } = useQueueStore();
+  const { addToQueue, getMyQueueItem, getCustomerRouteProgress, getQueueItemByOrder, queueItems } = useQueueStore();
+  const isCustomer = role === 'customer' && currentUser;
 
   const tabs = [
     { key: 'all' as TabType, label: '全部' },
@@ -41,6 +43,19 @@ const MatchPage: React.FC = () => {
     return matches.filter((m) => !m.isMatched);
   }, [matches, activeTab]);
 
+  const progressMap = useMemo(() => {
+    const map: Record<string, CustomerRouteProgress | null> = {};
+    if (!isCustomer) return map;
+    const myOrderIds = new Set(matches.map((m) => m.order.id));
+    myOrderIds.forEach((orderId) => {
+      const q = getQueueItemByOrder(orderId);
+      if (q) {
+        map[orderId] = getCustomerRouteProgress(orderId);
+      }
+    });
+    return map;
+  }, [isCustomer, matches, getQueueItemByOrder, getCustomerRouteProgress, role, currentUser, queueItems]);
+
   const handleCustomerWilling = (matchId: string, willing: boolean) => {
     setCustomerWilling(matchId, willing);
   };
@@ -55,7 +70,8 @@ const MatchPage: React.FC = () => {
       Taro.showModal({
         title: '订单已在队列中',
         content: `该订单已由 ${existingQueueItem.master.name} 师傅接单\n\n取号：${existingQueueItem.queueNumber}号\n当前排位：第${existingQueueItem.position}位\n状态：${existingQueueItem.status === 'waiting' ? '排队中' : existingQueueItem.status === 'called' ? '已叫号' : '服务中'}`,
-        showCancel: false,
+        showCancel: true,
+        cancelText: '知道了',
         confirmText: '查看队列',
         success: (res) => {
           if (res.confirm) {
@@ -101,6 +117,79 @@ const MatchPage: React.FC = () => {
     Taro.navigateTo({ url: `/pages/master-detail/index?id=${masterId}` });
   };
 
+  const renderProgressCard = (progress: CustomerRouteProgress, masterId: string) => (
+    <View className={styles.progressCard}>
+      <View className={styles.progressHeader}>
+        <View className={styles.progressMasterRow}>
+          <Image className={styles.progressAvatar} src={progress.master.avatar} />
+          <View>
+            <Text className={styles.progressMasterName}>{progress.master.name}</Text>
+            <Text className={styles.progressMasterMeta}>⭐ {progress.master.rating} · {progress.master.orderCount}单</Text>
+          </View>
+        </View>
+        <Tag
+          text={progress.stopsAhead === 0 ? '轮到我了' : progress.stopsAhead <= 2 ? '马上到' : '在路上'}
+          color={progress.stopsAhead === 0 ? 'success' : progress.stopsAhead <= 2 ? 'warning' : 'primary'}
+        />
+      </View>
+      <View className={styles.progressGrid}>
+        <View className={styles.progressItem}>
+          <Text className={styles.progressNum}>{progress.totalStops}</Text>
+          <Text className={styles.progressTxt}>总共站点</Text>
+        </View>
+        <View className={styles.progressItem}>
+          <Text className={styles.progressNum}>{progress.currentStop}</Text>
+          <Text className={styles.progressTxt}>当前站点</Text>
+        </View>
+        <View className={styles.progressItem}>
+          <Text className={styles.progressNum}>{progress.stopsAhead}</Text>
+          <Text className={styles.progressTxt}>前面还有</Text>
+        </View>
+        <View className={styles.progressItem}>
+          <Text className={styles.progressNum}>{progress.estimatedWaitMinutes}min</Text>
+          <Text className={styles.progressTxt}>预计等待</Text>
+        </View>
+      </View>
+      <View className={styles.progressEta}>
+        <Text className={styles.progressEtaLabel}>⏰ 预计到达</Text>
+        <Text className={styles.progressEtaValue}>{progress.estimatedArrival}</Text>
+        <Text className={styles.progressEtaNote}>
+          {progress.stopsAhead === 0
+            ? '师傅马上到达！请准备好待服务物品'
+            : progress.stopsAhead === 1
+              ? '正在处理上一单，请准备'
+              : `师傅还需处理${progress.stopsAhead}单，请耐心等待`}
+        </Text>
+      </View>
+      {progress.allStops.length > 0 && (
+        <View className={styles.progressStopsMini}>
+          {progress.allStops.map((stop) => {
+            const isMine = stop.orderId === progress.orderId;
+            const isDone = stop.sequence <= progress.currentStop;
+            return (
+              <View
+                key={stop.orderId}
+                className={classnames(
+                  styles.progressStopMini,
+                  isMine && styles.progressStopMineMini,
+                  isDone && styles.progressStopDoneMini
+                )}
+              >
+                <View className={classnames(
+                  styles.progressStopDotMini,
+                  isMine && styles.progressStopDotMineMini,
+                  isDone && styles.progressStopDotDoneMini
+                )}>
+                  <Text>{isMine ? '我' : isDone ? '✓' : stop.sequence}</Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      )}
+    </View>
+  );
+
   return (
     <View className={styles.page}>
       <View className={styles.tabs}>
@@ -140,6 +229,9 @@ const MatchPage: React.FC = () => {
           {filteredMatches.length > 0 ? (
             filteredMatches.map((item) => {
               const lockInfo = isOrderLocked(item.order.id);
+              const progress = progressMap[item.order.id];
+              const isMyLockedMaster = lockInfo.locked && lockInfo.master?.id === item.master.id;
+              const queueItem = getQueueItemByOrder(item.order.id);
               return (
               <View
                 key={item.id}
@@ -149,6 +241,11 @@ const MatchPage: React.FC = () => {
                   {lockInfo.locked && lockInfo.master?.id !== item.master.id && (
                     <View className={styles.lockedBadge}>
                       🔒 已由 {lockInfo.master?.name} 师傅接单
+                    </View>
+                  )}
+                  {isMyLockedMaster && queueItem && (
+                    <View className={styles.myOrderBadge}>
+                      ✅ 由 {lockInfo.master?.name} 师傅接单中 · 第{queueItem.queueNumber}号
                     </View>
                   )}
                   <View className={styles.orderInfo}>
@@ -170,6 +267,8 @@ const MatchPage: React.FC = () => {
                     <Text className={styles.scoreLabel}>契合度</Text>
                   </View>
                 </View>
+
+                {isMyLockedMaster && progress && renderProgressCard(progress, item.master.id)}
 
                 <View className={styles.matchBody} onClick={() => handleViewMaster(item.master.id)}>
                   <Text className={styles.avatar} style={{ background: `url(${item.master.avatar}) center/cover` }} />
@@ -265,7 +364,7 @@ const MatchPage: React.FC = () => {
                   </View>
                 )}
 
-                {item.isMatched && (
+                {item.isMatched && !queueItem && (
                   <>
                     <View className={styles.matchSuccess}>
                       <Text className={styles.matchSuccessText}>🎉 双方确认意向，匹配成功！</Text>
@@ -280,6 +379,20 @@ const MatchPage: React.FC = () => {
                       </View>
                     </View>
                   </>
+                )}
+
+                {queueItem && isMyLockedMaster && (
+                  <View className={styles.actionBtns}>
+                    <View className={classnames(styles.actionBtn, styles.secondaryBtn)} onClick={() => handleViewMaster(item.master.id)}>
+                      <Text>师傅详情</Text>
+                    </View>
+                    <View
+                      className={classnames(styles.actionBtn, styles.primaryBtn)}
+                      onClick={() => Taro.switchTab({ url: '/pages/queue/index' })}
+                    >
+                      <Text>查看师傅路线进度</Text>
+                    </View>
+                  </View>
                 )}
               </View>
               );
